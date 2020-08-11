@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+    <title>Duplicate Question Detector Endpoint</title>
+</head>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<body>
+
+
+    <div class="container">
+        <h5>Duplicate Question Detector Endpoint</h5>
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post" action=" " id="qform">
+                    <div class="form-group">
+                        <label for="question_1">Question 1:</label>
+                        <textarea type="text" class="form-control" name="q1" id="q1">Enter First Question</textarea>
+                    </div>
+                    <div class="form-group">
+                    <label for="question_2">Question 2:</label>
+                    <textarea type="text" class="form-control" name="q2" id="q2">Enter Second Question</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+
+        </div>
+    </div>
+        <h6 id="result" style="margin: 10px"></h6>
+    </div>
+</body>
+<script>
+    document.getElementById('qform').onsubmit = function() {
+        const questions = JSON.stringify([document.getElementById('q1').value, document.getElementById('q2').value]);
+        console.log(questions)
+        let response = "";
+        fetch("http://127.0.0.1:5000/predict", {method: "post", body: questions,
+            headers: { 'Content-Type': 'application/json' }})
+            .then(resp => {
+                if (resp.status == 200) {
+                    return resp.json()
+                } else {
+                    console.log("Status: " + resp.status);
+                    return Promise.reject("server")
+                }
+            })
+            .then(jsonResponse => {
+                console.log(jsonResponse)
+                response = jsonResponse
+                console.log(`Received: ${response}`)
+                result = response['prediction'] == 1? 'duplicate' : 'unique';
+                document.getElementById('result').innerText = `The two questions are ${result}`
+                return false;
+            })
+            .catch(err => {
+                if (err == "server") return
+                console.log(err);
+                document.getElementById('result').innerText = err;
+                return false;
+            })
+
+return false;
+    }
+</script>
+</html>
